@@ -13,15 +13,35 @@ exports.createThing = (req,res, next)=>{
         .catch(error => res.status(400).json({error}));
 }
 exports.modifyThing = (req, res,next)=>{
-    const thingObject = req.file ?
-        {
-            ...JSON.parse(req.body.thing),
-            imageUrl: `${req.protocol}://${req.get('host')}/image/${req.file.filename}`
-        } : { ...req.body};
-    Thing.updateOne({_id: req.params.id}, {...thingObject,_id: req.params.id})
-        .then(()=>res.status(200).json({message:'Thing modify !'}))
-        .catch(error=>res.status(400).json({error}));
+    //If user changes the product image, the old one will be deleted from the server
+    let thingObject;
+    if (req.file) {
+        Thing.findOne({_id: req.params.id})
+            .then(thing => {
+                //Get image name in server
+                const filename = thing.imageUrl.split('/image/')[1];
+                //Deleting image form image folder
+                fs.unlink(`image/${filename}`, ()=> {
+                    console.log(filename + " deleted");
+                });
+                thingObject = {
+                    ...JSON.parse(req.body.thing),
+                    imageUrl: `${req.protocol}://${req.get('host')}/image/${req.file.filename}`,
+                };
+                Thing.updateOne({_id: req.params.id}, {...thingObject,_id: req.params.id})
+                    .then(()=>res.status(200).json({message:'Thing modify !'}))
+                    .catch(error=>res.status(400).json({error}));
+
+            })
+            .catch(error => res.status(500).json({error}));
+    }else {
+        thingObject = { ...req.body};
+        Thing.updateOne({_id: req.params.id}, {...thingObject,_id: req.params.id})
+            .then(()=>res.status(200).json({message:'Thing modify !'}))
+            .catch(error=>res.status(400).json({error}));
+    }
 }
+
 exports.deleteThings = (req,res,next)=>{
     Thing.findOne({_id : req.params.id})
         .then(thing => {
@@ -46,7 +66,6 @@ exports.deleteThings = (req,res,next)=>{
             });
         })
         .catch(error =>res.status(500).json({error}));
-
 }
 exports.getAllThings = (req,res,next)=>{
     Thing.find()
