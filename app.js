@@ -1,5 +1,6 @@
 const express = require('express');
 const  mongoose = require('mongoose');
+require('dotenv').config();
 const path = require('path');
 
 const stuffRoutes = require('./routes/stuff');
@@ -8,7 +9,9 @@ const userRoutes = require('./routes/user');
 /**
  * mongodb connection
  */
-mongoose.connect('mongodb+srv://mouk:Mouk1996@openclass.izrbq.mongodb.net/Openclass?retryWrites=true&w=majority',
+let pwd = process.env.PASS_WORD;
+let database= process.env.DATA_NAME ;
+mongoose.connect('mongodb+srv://'+pwd+'@openclass.izrbq.mongodb.net/'+database+'?retryWrites=true&w=majority',
     {useNewUrlParser: true,
         useUnifiedTopology:true})
     .then(()=>console.log('Connexion à MongoDB réussie!'))
