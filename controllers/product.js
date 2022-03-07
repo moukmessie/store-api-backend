@@ -73,5 +73,5 @@ exports.getAllProducts = (req, res, next)=>{
 exports.getOneProduct = (req, res, next)=>{
     Product.findOne({_id: req.params.id})
         .then(product=>res.status(200).json(product))
-        .catch(error=>res.status(404).json('Product not found!'))
+        .catch(error=>res.status(404).json({error: error, message: 'Product not found!'}))
 }

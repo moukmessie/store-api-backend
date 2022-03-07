@@ -1,7 +1,7 @@
 const express = require('express');
 const  mongoose = require('mongoose');
-require('dotenv').config();
 const path = require('path');
+require('dotenv').config();
 
 const stuffRoutes = require('./routes/product');
 const userRoutes = require('./routes/user');
@@ -9,13 +9,20 @@ const userRoutes = require('./routes/user');
 /**
  * mongodb connection
  */
-let pwd = process.env.PASS_WORD;
-let database= process.env.DATA_NAME ;
-mongoose.connect('mongodb+srv://'+pwd+'@openclass.izrbq.mongodb.net/'+database+'?retryWrites=true&w=majority',
-    {useNewUrlParser: true,
-        useUnifiedTopology:true})
-    .then(()=>console.log('Connexion à MongoDB réussie!'))
-    .catch(()=>console.log('Connexion à MongoDB échoué !'));
+const {
+    DB_USER,
+    DB_PWD,
+    DB_URL,
+    DB_NAME
+} = process.env;
+
+mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PWD}@${DB_URL}/${DB_NAME}?retryWrites=true&w=majority`)
+    .then(()=> {
+        console.log('Connexion à MongoDB réussie!!')
+    })
+    .catch(err => {
+        console.log('Connexion à MongoDB échoué  : ' + err)
+    });
 
 const app = express();
 
@@ -30,7 +37,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use('/image', express.static(path.join(__dirname, 'image')));
 
-app.use('/api/stuff', stuffRoutes);
+app.use('/api/product', stuffRoutes);
 app.use('/api/auth',userRoutes);
 
 module.exports= app;
